@@ -2,23 +2,52 @@ const frame = document.querySelector('.frame')
 
 const imgs = ['./img/nongdamgom1.jpeg', './img/nongdamgom2.jpeg', './img/nongdamgom3.jpeg', './img/nongdamgom4.png','./img/nongdamgom5.jpeg']
 let imgCount = 0
-for (let i = 0; i<5; i++){
-    appendCard()
+
+function InitCards(imgs) {
+    console.log(imgs)
+
+    for (let i = 0; i < imgs.length; i++){
+        appendCard()
+    }
+    refreshCards()
+}
+
+function refreshCards(){
+    var newCards= document.querySelectorAll('.card:not(.removed)')
+
+
+    if (newCards) {
+        const topCard = frame.children[newCards.length-1]
+        
+        for (let i = 0; i < imgs.length; i++){
+            // newCards[imgs.length -1 - i].style.transform = ''
+            newCards[imgs.length -1 - i].style.transform = 'scale(' + (20 - i)/20 + ') translateY(-' + i * 20 + 'px)'
+            newCards[imgs.length -1 - i].style.opacitiy = (10-i) / 10
+            newCards[imgs.length -1 - i].style.transition = `transform 100ms`
+        }
+    }
+}
+
+InitCards(imgs)
+
+function appendCard() {
+    const firstCard = frame.children[0]
+    const newCard = document.createElement('div')
+    newCard.className = 'card'
+    // newCard.style.backgroundImage = `url(${imgs[imgCount++ % imgs.length]})` // 나중에 여기에 player 객체 넣기
+    newCard.style.backgroundImage = `url(${imgs[imgCount++]})`
+
+    if (firstCard) {
+        frame.insertBefore(newCard, firstCard) //첫번째 카드가 있으면 앞에 새카드
+    } else {
+        frame.appendChild(newCard) // 없으면
+    } 
 }
 
 let cur = frame.querySelector('.card:last-child') //최상단 카드
 let startX = 0, startY = 0, moveX = 0, moveY = 0
 addEventListener(cur)
 
-
-function appendCard() {
-    const firstCard = frame.children[0]
-    const newCard = document.createElement('div')
-    newCard.className = 'card'
-    newCard.style.backgroundImage = `url(${imgs[imgCount++ % imgs.length]})`
-    if (firstCard) frame.insertBefore(newCard, firstCard) //첫번째 카드가 있으면 앞에 새카드
-    else frame.appendChild(newCard) // 없으면 
-}
 
 function addEventListener(card) {
     card.addEventListener('pointerdown', onPointerDown)
@@ -75,13 +104,17 @@ function swipeComplete() {
     const flyY = (moveY / moveX) * flyX
     setTransform(flyX, flyY, flyX / innerWidth * 50, innerWidth)
 
-    // // Replace Card 
+    // // Replace Top Card 
     const prev = cur
     const next = cur.previousElementSibling
     cur = next
     addEventListener(next)
+    prev.classList.add('removed')
     appendCard()
     setTimeout(() => frame.removeChild(prev), innerWidth)
+    
+    // replace 하면서 위치 바꿔치기?
+    refreshCards()
 }
 function swipeCancel() {
     setTransform(0, 0, 0, 100)
